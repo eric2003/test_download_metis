@@ -1,8 +1,10 @@
 function InstallHDF5() {
     Write-Host "Installing HDF5..."
+	$zipexe = "C:/Program Files/7-zip/7z.exe" 
     Write-Host "ls C:/Program Files/7-zip"
     ls "C:/Program Files/7-zip"
-    Start-Process "C:/Program Files/7-zip/7z.exe" -Wait -ArgumentList 'x ./hdf5-1.10.7-Std-win10_64-vs16.zip'
+	
+    Start-Process $zipexe -Wait -ArgumentList 'x ./hdf5-1.10.7-Std-win10_64-vs16.zip'
     ls
     cd hdf
     ls
@@ -17,6 +19,16 @@ function InstallHDF5() {
 	Write-Host "ls $Program_Dir"
 	ls $Program_Dir
     ModifyEnvironmentVariable	
+}
+
+function InstallCGNS() {
+    Write-Host "Installing CGNS..."
+	$zipexe = "C:/Program Files/7-zip/7z.exe" 
+    Start-Process $zipexe -Wait -ArgumentList 'x ./CGNS-4.2.0.zip'
+    ls
+    cd CGNS-4.2.0
+    ls
+    Write-Host "Installing CGNS-4.2.0..."
 }
 
 function ModifyEnvironmentVariable() {
@@ -42,6 +54,17 @@ function DownloadHDF5() {
 	Write-Host "$hdf5_version_name downloading complete"
 }
 
+function DownloadCGNS() {
+	Write-Host "Downloading CGNS-4.2.0..."
+	$download_url = "https://github.com/CGNS/CGNS/archive/refs/tags/"
+	$cgns_filename = "v4.2.0.zip"
+	$cgns_webfilename = $download_url + $hdf5_filename
+
+	MyDownloadFile( $cgns_webfilename )
+	Write-Host "CGNS-4.2.0 downloading complete"
+}
+
+
 function MyGetFileName( $filePath ) {
 	$file_name_complete = [System.IO.Path]::GetFileName("$filePath")
 	$file_name_complete
@@ -60,6 +83,7 @@ function MyDownloadFile( $fullFilePath ) {
 function main() {
 	DownloadHDF5
     InstallHDF5
+	DownloadCGNS
 }
 
 main

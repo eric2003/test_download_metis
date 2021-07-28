@@ -28,6 +28,18 @@ function InstallCGNS() {
     ls
     cd CGNS-4.2.0
     ls
+	Write-Host "mkdir build..."
+	mkdir build
+	Write-Host "ls..."
+	ls
+	cd build
+	#cmake ../
+	cmake -DCGNS_ENABLE_64BIT="ON" `
+	      -DCGNS_ENABLE_HDF5="ON" `
+		  -DCGNS_BUILD_SHARED="ON" `
+		  -DCMAKE_INSTALL_PREFIX="C:/cgns" ../
+    cmake --build . --parallel 4 --config release
+	cmake --install .
     Write-Host "Installing CGNS-4.2.0..."
 }
 
@@ -61,9 +73,14 @@ function DownloadCGNS() {
 	$cgns_filename = "v4.2.0.zip"
 	$cgns_real_filename = "CGNS-4.2.0.zip"	
 	$cgns_webfilename = $download_url + $cgns_filename
+	
+	Write-Host "download_url is $download_url"
+	Write-Host "cgns_webfilename is $cgns_webfilename"
+	Write-Host "cgns_real_filename is $cgns_real_filename"
+	Write-Host "calling MyDownloadFile2 cgns_webfilenamec cgns_real_filename"
 
 	#MyDownloadFile( $cgns_webfilename )
-	MyDownloadFile2 $cgns_webfilenamec $cgns_real_filename
+	MyDownloadFile2 $cgns_webfilename $cgns_real_filename
 	ls
 	Write-Host "CGNS-4.2.0 downloading complete"
 }
@@ -85,8 +102,12 @@ function MyDownloadFile( $fullFilePath ) {
 }
 
 function MyDownloadFile2( $fullFilePath, $my_filename ) {
+	Write-Host "MyDownloadFile2 fullFilePath is $fullFilePath"
+	Write-Host "MyDownloadFile2 my_filename is $my_filename"
 	$my_location = Get-Location
+	Write-Host "MyDownloadFile2 my_location is $my_location"
 	$my_local_filename = "$my_location" + "/" + $my_filename
+	Write-Host "MyDownloadFile2 my_local_filename is $my_local_filename"
 	
 	$my_client = new-object System.Net.WebClient
 	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
@@ -95,7 +116,7 @@ function MyDownloadFile2( $fullFilePath, $my_filename ) {
 
 function main() {
 	DownloadHDF5
-    InstallHDF5
+	InstallHDF5
 	DownloadCGNS
 	InstallCGNS
 }

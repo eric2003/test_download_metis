@@ -31,7 +31,7 @@ function ModifyMachineEnvironmentVariable( $varName, $varValue ) {
 }
 
 function DownloadHDF5() {
-	$hdf5_version_name = hdf5-1.10.7
+	$hdf5_version_name = "hdf5-1.10.7"
 	Write-Host "Downloading $hdf5_version_name..."
 	$hdf5_url          = "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.10/hdf5-1.10.7/bin/windows/"
 	$hdf5_name         = "hdf5-1.10.7-Std-win10_64-vs16"

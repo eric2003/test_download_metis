@@ -41,10 +41,10 @@ jobs:
           cd $project_name
           ls
         shell: pwsh          
-      - name: Download HDF5
+      - name: Download and Install HDF5
         run: |
           cd ${{ github.workspace }}
           ls
-          mkdir download1
-          ls
-        shell: pwsh          
+          $psfile = "${{ github.workspace }}/.github/workflows/installHDF5.ps1"
+          & $psfile
+        shell: pwsh

@@ -59,9 +59,11 @@ function DownloadCGNS() {
 	Write-Host "Downloading CGNS-4.2.0..."
 	$download_url = "https://github.com/CGNS/CGNS/archive/refs/tags/"
 	$cgns_filename = "v4.2.0.zip"
+	$cgns_real_filename = "CGNS-4.2.0.zip"	
 	$cgns_webfilename = $download_url + $cgns_filename
 
-	MyDownloadFile( $cgns_webfilename )
+	#MyDownloadFile( $cgns_webfilename )
+	MyDownloadFile2 $cgns_webfilenamec $cgns_real_filename
 	ls
 	Write-Host "CGNS-4.2.0 downloading complete"
 }
@@ -81,6 +83,15 @@ function MyDownloadFile( $fullFilePath ) {
 	$my_client = new-object System.Net.WebClient
 	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
 }
+
+function MyDownloadFile2( $fullFilePath, $my_filename ) {
+	$my_location = Get-Location
+	$my_local_filename = "$my_location" + "/" + $my_filename
+	
+	$my_client = new-object System.Net.WebClient
+	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
+}
+
 
 function main() {
 	DownloadHDF5

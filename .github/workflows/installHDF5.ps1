@@ -58,7 +58,7 @@ function DownloadCGNS() {
 	Write-Host "Downloading CGNS-4.2.0..."
 	$download_url = "https://github.com/CGNS/CGNS/archive/refs/tags/"
 	$cgns_filename = "v4.2.0.zip"
-	$cgns_webfilename = $download_url + $hdf5_filename
+	$cgns_webfilename = $download_url + $cgns_filename
 
 	MyDownloadFile( $cgns_webfilename )
 	Write-Host "CGNS-4.2.0 downloading complete"

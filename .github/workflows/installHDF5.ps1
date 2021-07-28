@@ -1,3 +1,53 @@
+function AddMachinePath( $varPath ) {
+	$Env:path = GetMachineEnvironmentVariable( "path" )
+	$Env:path = $Env:Path + ";$varPath" 
+	ModifyMachineEnvironmentVariable "path" $Env:path
+}
+
+function GetMachineEnvironmentVariable( $varName ) {
+	$varValue = [environment]::GetEnvironmentvariable($varName , [System.EnvironmentVariableTarget]::Machine)
+	$varValue
+}
+
+#function ModifyEnvironmentVariable() {
+#    $varName = "HDF5_DIR"
+#  	 $varValue = "C:\Program Files\HDF_Group\HDF5\1.10.7\cmake"
+#    ModifyMachineEnvironmentVariable $varName $varValue
+#}
+
+function ModifyMachineEnvironmentVariable( $varName, $varValue ) {
+	$Env:$varName = $varValue
+    $target = "Machine"
+    [Environment]::SetEnvironmentVariable($varName, $varValue, $target)
+}
+
+function MyGetFileName( $filePath ) {
+	$file_name_complete = [System.IO.Path]::GetFileName("$filePath")
+	$file_name_complete
+	#Write-Host "fileNameFull :" $file_name_complete	
+}
+
+function MyDownloadFile( $fullFilePath ) {
+	$my_filename = MyGetFileName("$fullFilePath")
+	$my_location = Get-Location
+	$my_local_filename = "$my_location" + "/" + $my_filename
+	
+	$my_client = new-object System.Net.WebClient
+	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
+}
+
+function MyDownloadFile2( $fullFilePath, $my_filename ) {
+	Write-Host "MyDownloadFile2 fullFilePath is $fullFilePath"
+	Write-Host "MyDownloadFile2 my_filename is $my_filename"
+	$my_location = Get-Location
+	Write-Host "MyDownloadFile2 my_location is $my_location"
+	$my_local_filename = "$my_location" + "/" + $my_filename
+	Write-Host "MyDownloadFile2 my_local_filename is $my_local_filename"
+	
+	$my_client = new-object System.Net.WebClient
+	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
+}
+
 function InstallMSMPI() {
     # install MPI SDK and Runtime
     Write-Host "Installing Microsoft MPI SDK..."
@@ -22,9 +72,6 @@ function InstallMSMPI() {
     $msmpi_bin_path = "C:/Program Files/Microsoft MPI/Bin"
     $msmpi_sdk_path = "C:/Program Files (x86)/Microsoft SDKs/MPI"
     
-    #$Env:Path = $Env:Path + ";$msmpi_bin_path"
-    #[environment]::SetEnvironmentvariable("path", $Env:Path, [System.EnvironmentVariableTarget]::Machine)
-	
 	AddMachinePath( $msmpi_bin_path )
     
     Write-Host "ls $msmpi_sdk_path"
@@ -37,10 +84,11 @@ function InstallMSMPI() {
 }
 
 function InstallHDF5() {
-    Write-Host "Installing HDF5..."
+	DownloadHDF5
+    Write-Host "Installing HDF5-1.10.7..."
 	$zipexe = "C:/Program Files/7-zip/7z.exe" 
-    Write-Host "ls C:/Program Files/7-zip"
-    ls "C:/Program Files/7-zip"
+    #Write-Host "ls C:/Program Files/7-zip"
+    #ls "C:/Program Files/7-zip"
 	
     Start-Process $zipexe -Wait -ArgumentList 'x ./hdf5-1.10.7-Std-win10_64-vs16.zip'
     ls
@@ -52,15 +100,50 @@ function InstallHDF5() {
 	$HDF5_InstallDir = "C:/Program Files/HDF_Group/HDF5/1.10.7"
 	Write-Host "ls $HDF5_InstallDir"
 	ls $HDF5_InstallDir
-	Write-Host "-------------------------------------------"
-	$Program_Dir = "C:/Program Files"
-	Write-Host "ls $Program_Dir"
-	ls $Program_Dir
-    ModifyEnvironmentVariable	
+    ModifyEnvironmentVariable
+	
+    $hdf5_dir_varName = "HDF5_DIR"
+	$hdf5_dir_varValue = "C:\Program Files\HDF_Group\HDF5\1.10.7\cmake"
+    ModifyMachineEnvironmentVariable $hdf5_dir_varName $hdf5_dir_varValue
+	
+	Write-Host "HDF5-1.10.7 installation complete..."
+	#$Program_Dir = "C:/Program Files"
+	#Write-Host "ls $Program_Dir"
+	#ls $Program_Dir
 }
 
 function InstallCGNS() {
+	DownloadCGNS	
     Write-Host "Installing CGNS..."
+	$zipexe = "C:/Program Files/7-zip/7z.exe" 
+    Start-Process $zipexe -Wait -ArgumentList 'x ./CGNS-4.2.0.zip'
+    ls
+    cd CGNS-4.2.0
+    ls
+	Write-Host "mkdir build..."
+	mkdir build
+	Write-Host "ls..."
+	ls
+	cd build
+	$tmp = GetMachineEnvironmentVariable("HDF5_DIR")
+	Write-Host "Machine Environment HDF5_DIR = $tmp"
+	Write-Host "local Env:HDF5_DIR = $Env:HDF5_DIR"
+	$Env:HDF5_DIR = $tmp;
+	Write-Host "now Env:HDF5_DIR = $Env:HDF5_DIR"
+	$cgns_prefix = "C:/cgns"
+	$cgns_bin = $cgns_prefix + "/bin"
+	cmake -DCGNS_ENABLE_64BIT="ON" `
+	      -DCGNS_ENABLE_HDF5="ON" `
+		  -DCGNS_BUILD_SHARED="ON" `
+		  -DCMAKE_INSTALL_PREFIX=$cgns_prefix ../
+    cmake --build . --parallel 4 --config release
+	cmake --install .
+	AddMachinePath( $cgns_bin )
+	Write-Host "CGNS-4.2.0 installation complete..."
+}
+
+function InstallMETIS() {
+    Write-Host "Installing METIS-5.1.0..."
 	$zipexe = "C:/Program Files/7-zip/7z.exe" 
     Start-Process $zipexe -Wait -ArgumentList 'x ./CGNS-4.2.0.zip'
     ls
@@ -85,33 +168,8 @@ function InstallCGNS() {
 		  -DCMAKE_INSTALL_PREFIX=$cgns_prefix ../
     cmake --build . --parallel 4 --config release
 	cmake --install .
-	#$Env:path = GetMachineEnvironmentVariable("path")
-	#$Env:path = $Env:Path + ";$cgns_bin" 
-	#ModifyMachineEnvironmentVariable "path" $Env:path
 	AddMachinePath( $cgns_bin )
-    Write-Host "Installing CGNS-4.2.0..."
-}
-
-function AddMachinePath( $varPath ) {
-	$Env:path = GetMachineEnvironmentVariable( "path" )
-	$Env:path = $Env:Path + ";$varPath" 
-	ModifyMachineEnvironmentVariable "path" $Env:path
-}
-
-function GetMachineEnvironmentVariable( $varName ) {
-	$varValue = [environment]::GetEnvironmentvariable($varName , [System.EnvironmentVariableTarget]::Machine)
-	$varValue
-}
-
-function ModifyEnvironmentVariable() {
-    $varName = "HDF5_DIR"
-	$varValue = "C:\Program Files\HDF_Group\HDF5\1.10.7\cmake"
-    ModifyMachineEnvironmentVariable $varName $varValue
-}
-
-function ModifyMachineEnvironmentVariable( $varName, $varValue ) {
-    $target = "Machine"
-    [Environment]::SetEnvironmentVariable($varName, $varValue, $target)
+	Write-Host "METIS-5.1.0 installation complete..."
 }
 
 function DownloadHDF5() {
@@ -145,41 +203,11 @@ function DownloadCGNS() {
 	Write-Host "CGNS-4.2.0 downloading complete"
 }
 
-
-function MyGetFileName( $filePath ) {
-	$file_name_complete = [System.IO.Path]::GetFileName("$filePath")
-	$file_name_complete
-	#Write-Host "fileNameFull :" $file_name_complete	
-}
-
-function MyDownloadFile( $fullFilePath ) {
-	$my_filename = MyGetFileName("$fullFilePath")
-	$my_location = Get-Location
-	$my_local_filename = "$my_location" + "/" + $my_filename
-	
-	$my_client = new-object System.Net.WebClient
-	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
-}
-
-function MyDownloadFile2( $fullFilePath, $my_filename ) {
-	Write-Host "MyDownloadFile2 fullFilePath is $fullFilePath"
-	Write-Host "MyDownloadFile2 my_filename is $my_filename"
-	$my_location = Get-Location
-	Write-Host "MyDownloadFile2 my_location is $my_location"
-	$my_local_filename = "$my_location" + "/" + $my_filename
-	Write-Host "MyDownloadFile2 my_local_filename is $my_local_filename"
-	
-	$my_client = new-object System.Net.WebClient
-	$my_client.DownloadFile( $fullFilePath, $my_local_filename )	
-}
-
-
 function main() {
 	InstallMSMPI
-	DownloadHDF5
 	InstallHDF5
-	DownloadCGNS
 	InstallCGNS
+	InstallMETIS
 }
 
 main

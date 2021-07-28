@@ -33,6 +33,14 @@ function InstallCGNS() {
 	Write-Host "ls..."
 	ls
 	cd build
+	$tmp = GetMachineEnvironmentVariable("HDF5_DIR")
+	$Env:HDF5_DIR
+	Write-Host "HDF5_DIR = tmp"
+	Write-Host "Env:HDF5_DIR = $Env:HDF5_DIR"
+	$Env:HDF5_DIR = $tmp;
+	Write-Host "now Env:HDF5_DIR = $Env:HDF5_DIR"
+	#$Env:path = [environment]::GetEnvironmentvariable("path", [System.EnvironmentVariableTarget]::Machine)
+	#$Env:path = $Env:Path + ";${{ github.workspace }}/bin"  	
 	#cmake ../
 	cmake -DCGNS_ENABLE_64BIT="ON" `
 	      -DCGNS_ENABLE_HDF5="ON" `
@@ -41,6 +49,11 @@ function InstallCGNS() {
     cmake --build . --parallel 4 --config release
 	cmake --install .
     Write-Host "Installing CGNS-4.2.0..."
+}
+
+function GetMachineEnvironmentVariable( $varName ) {
+	$varValue = [environment]::GetEnvironmentvariable($varName , [System.EnvironmentVariableTarget]::Machine)
+	$varValue
 }
 
 function ModifyEnvironmentVariable() {

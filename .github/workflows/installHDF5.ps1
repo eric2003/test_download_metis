@@ -35,19 +35,21 @@ function InstallCGNS() {
 	cd build
 	$tmp = GetMachineEnvironmentVariable("HDF5_DIR")
 	$Env:HDF5_DIR
-	Write-Host "HDF5_DIR = tmp"
-	Write-Host "Env:HDF5_DIR = $Env:HDF5_DIR"
+	Write-Host "Machine Environment HDF5_DIR = $tmp"
+	Write-Host "local Env:HDF5_DIR = $Env:HDF5_DIR"
 	$Env:HDF5_DIR = $tmp;
 	Write-Host "now Env:HDF5_DIR = $Env:HDF5_DIR"
-	#$Env:path = [environment]::GetEnvironmentvariable("path", [System.EnvironmentVariableTarget]::Machine)
-	#$Env:path = $Env:Path + ";${{ github.workspace }}/bin"  	
-	#cmake ../
-	cmake -DCGNS_ENABLE_64BIT="ON" `
-	      -DCGNS_ENABLE_HDF5="ON" `
-		  -DCGNS_BUILD_SHARED="ON" `
-		  -DCMAKE_INSTALL_PREFIX="C:/cgns" ../
+	$cgns_prefix = "C:/cgns/"
+	$cgns_bin = $cgns_prefix + "bin/"
+	cmake -DCGNS_ENABLE_64BIT = "ON" `
+	      -DCGNS_ENABLE_HDF5 = "ON" `
+		  -DCGNS_BUILD_SHARED = "ON" `
+		  -DCMAKE_INSTALL_PREFIX = $cgns_prefix ../
     cmake --build . --parallel 4 --config release
 	cmake --install .
+	$Env:path = GetMachineEnvironmentVariable("path")
+	$Env:path = $Env:Path + ";$cgns_bin" 
+	ModifyMachineEnvironmentVariable "path" $Env:path
     Write-Host "Installing CGNS-4.2.0..."
 }
 

@@ -1,3 +1,41 @@
+function InstallMSMPI() {
+    # install MPI SDK and Runtime
+    Write-Host "Installing Microsoft MPI SDK..."
+    $download_url = "https://download.microsoft.com/download/A/E/0/AE002626-9D9D-448D-8197-1EA510E297CE/"
+    $msmpisdk_filename = "msmpisdk.msi"
+    $msmpisdk_webfilename = $download_url + $msmpisdk_filename
+
+    MyDownloadFile( $msmpisdk_webfilename )
+    
+    Start-Process -FilePath msiexec.exe -ArgumentList "/quiet /qn /i msmpisdk.msi" -Wait
+    Write-Host "Microsoft MPI SDK installation complete"
+    
+    Write-Host "Installing Microsoft MPI Runtime..."
+    $msmpisetup_filename = "msmpisetup.exe"
+    $msmpisetup_webfilename = $download_url + $msmpisetup_filename
+    
+    MyDownloadFile( $msmpisetup_webfilename )
+    
+    Start-Process -FilePath MSMpiSetup.exe -ArgumentList -unattend -Wait
+    Write-Host "Microsoft MPI Runtime installation complete..."
+    
+    $msmpi_bin_path = "C:/Program Files/Microsoft MPI/Bin"
+    $msmpi_sdk_path = "C:/Program Files (x86)/Microsoft SDKs/MPI"
+    
+    #$Env:Path = $Env:Path + ";$msmpi_bin_path"
+    #[environment]::SetEnvironmentvariable("path", $Env:Path, [System.EnvironmentVariableTarget]::Machine)
+	
+	AddMachinePath( $msmpi_bin_path )
+    
+    Write-Host "ls $msmpi_sdk_path"
+    ls $msmpi_sdk_path
+    Write-Host "ls $msmpi_sdk_path"
+    ls $msmpi_bin_path
+    
+    Write-Host "mpiexec"
+    mpiexec 
+}
+
 function InstallHDF5() {
     Write-Host "Installing HDF5..."
 	$zipexe = "C:/Program Files/7-zip/7z.exe" 
@@ -39,18 +77,25 @@ function InstallCGNS() {
 	Write-Host "local Env:HDF5_DIR = $Env:HDF5_DIR"
 	$Env:HDF5_DIR = $tmp;
 	Write-Host "now Env:HDF5_DIR = $Env:HDF5_DIR"
-	$cgns_prefix = "C:/cgns/"
-	$cgns_bin = $cgns_prefix + "bin/"
-	cmake -DCGNS_ENABLE_64BIT = "ON" `
-	      -DCGNS_ENABLE_HDF5 = "ON" `
-		  -DCGNS_BUILD_SHARED = "ON" `
-		  -DCMAKE_INSTALL_PREFIX = $cgns_prefix ../
+	$cgns_prefix = "C:/cgns"
+	$cgns_bin = $cgns_prefix + "/bin"
+	cmake -DCGNS_ENABLE_64BIT="ON" `
+	      -DCGNS_ENABLE_HDF5="ON" `
+		  -DCGNS_BUILD_SHARED="ON" `
+		  -DCMAKE_INSTALL_PREFIX=$cgns_prefix ../
     cmake --build . --parallel 4 --config release
 	cmake --install .
-	$Env:path = GetMachineEnvironmentVariable("path")
-	$Env:path = $Env:Path + ";$cgns_bin" 
-	ModifyMachineEnvironmentVariable "path" $Env:path
+	#$Env:path = GetMachineEnvironmentVariable("path")
+	#$Env:path = $Env:Path + ";$cgns_bin" 
+	#ModifyMachineEnvironmentVariable "path" $Env:path
+	AddMachinePath( $cgns_bin )
     Write-Host "Installing CGNS-4.2.0..."
+}
+
+function AddMachinePath( $varPath ) {
+	$Env:path = GetMachineEnvironmentVariable( "path" )
+	$Env:path = $Env:Path + ";$varPath" 
+	ModifyMachineEnvironmentVariable "path" $Env:path
 }
 
 function GetMachineEnvironmentVariable( $varName ) {
@@ -130,6 +175,7 @@ function MyDownloadFile2( $fullFilePath, $my_filename ) {
 
 
 function main() {
+	InstallMSMPI
 	DownloadHDF5
 	InstallHDF5
 	DownloadCGNS

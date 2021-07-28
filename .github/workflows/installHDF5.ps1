@@ -84,6 +84,7 @@ function main() {
 	DownloadHDF5
     InstallHDF5
 	DownloadCGNS
+	InstallCGNS
 }
 
 main

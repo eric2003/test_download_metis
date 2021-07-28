@@ -32,4 +32,12 @@ jobs:
           mkdir download
           cd download
           git --version
+          $project_url      = "https://github.com/eric2003/"
+          $project_name     = "METIS-5.1.0-Modified"
+          $project_git_name = $project_name + ".git"
+          $project_web_addr = $project_url + $project_git_name
+          git clone $project_web_addr
+          ls
+          cd $project_name
+          ls
         shell: pwsh          

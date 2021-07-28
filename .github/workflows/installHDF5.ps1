@@ -51,6 +51,7 @@ function DownloadHDF5() {
 	$hdf5_web_addr = $hdf5_url + $hdf5_package_name
 		  
 	MyDownloadFile( $hdf5_web_addr )
+	ls
 	Write-Host "$hdf5_version_name downloading complete"
 }
 
@@ -61,6 +62,7 @@ function DownloadCGNS() {
 	$cgns_webfilename = $download_url + $cgns_filename
 
 	MyDownloadFile( $cgns_webfilename )
+	ls
 	Write-Host "CGNS-4.2.0 downloading complete"
 }
 

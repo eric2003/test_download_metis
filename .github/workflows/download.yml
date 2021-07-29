@@ -24,24 +24,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-
-      - name: Download Metis from github
-        run: |
-          cd ${{ github.workspace }}
-          ls
-          mkdir download
-          cd download
-          git --version
-          $project_url      = "https://github.com/eric2003/"
-          $project_name     = "METIS-5.1.0-Modified"
-          $project_git_name = $project_name + ".git"
-          $project_web_addr = $project_url + $project_git_name
-          git clone $project_web_addr
-          ls
-          cd $project_name
-          ls
-        shell: pwsh          
-      - name: Download and Install HDF5
+      - name: Download and Install MPI HDF5 CGNS METIS
         run: |
           cd ${{ github.workspace }}
           ls

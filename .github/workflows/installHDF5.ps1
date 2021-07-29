@@ -9,14 +9,7 @@ function GetMachineEnvironmentVariable( $varName ) {
 	$varValue
 }
 
-#function ModifyEnvironmentVariable() {
-#    $varName = "HDF5_DIR"
-#  	 $varValue = "C:\Program Files\HDF_Group\HDF5\1.10.7\cmake"
-#    ModifyMachineEnvironmentVariable $varName $varValue
-#}
-
 function ModifyMachineEnvironmentVariable( $varName, $varValue ) {
-	$Env:$varName = $varValue
     $target = "Machine"
     [Environment]::SetEnvironmentVariable($varName, $varValue, $target)
 }
@@ -100,11 +93,13 @@ function InstallHDF5() {
 	$HDF5_InstallDir = "C:/Program Files/HDF_Group/HDF5/1.10.7"
 	Write-Host "ls $HDF5_InstallDir"
 	ls $HDF5_InstallDir
-    ModifyEnvironmentVariable
 	
-    $hdf5_dir_varName = "HDF5_DIR"
+	$hdf5_dir_varName = "HDF5_DIR"
 	$hdf5_dir_varValue = "C:\Program Files\HDF_Group\HDF5\1.10.7\cmake"
     ModifyMachineEnvironmentVariable $hdf5_dir_varName $hdf5_dir_varValue
+	
+	Write-Host "Checking Env:HDF5_DIR..."
+	Write-Host "Env:HDF5_DIR = $Env:HDF5_DIR"
 	
 	Write-Host "HDF5-1.10.7 installation complete..."
 	#$Program_Dir = "C:/Program Files"
@@ -142,33 +137,32 @@ function InstallCGNS() {
 	Write-Host "CGNS-4.2.0 installation complete..."
 }
 
+function DownloadMETIS() {
+    Write-Host "Downloading METIS-5.1.0..."
+	git --version
+	$metis_project_url      = "https://github.com/eric2003/"
+	$metis_project_name     = "METIS-5.1.0-Modified"
+	$metis_project_git_name = $metis_project_name + ".git"
+	$metis_project_web_addr = $metis_project_url + $metis_project_git_name
+	git clone $metis_project_web_addr
+	ls
+	cd $metis_project_name
+	ls
+	Write-Host "Downloading METIS-5.1.0 complete..."
+}
+
 function InstallMETIS() {
+	DownloadMETIS
     Write-Host "Installing METIS-5.1.0..."
-	$zipexe = "C:/Program Files/7-zip/7z.exe" 
-    Start-Process $zipexe -Wait -ArgumentList 'x ./CGNS-4.2.0.zip'
-    ls
-    cd CGNS-4.2.0
-    ls
 	Write-Host "mkdir build..."
 	mkdir build
 	Write-Host "ls..."
 	ls
 	cd build
-	$tmp = GetMachineEnvironmentVariable("HDF5_DIR")
-	$Env:HDF5_DIR
-	Write-Host "Machine Environment HDF5_DIR = $tmp"
-	Write-Host "local Env:HDF5_DIR = $Env:HDF5_DIR"
-	$Env:HDF5_DIR = $tmp;
-	Write-Host "now Env:HDF5_DIR = $Env:HDF5_DIR"
-	$cgns_prefix = "C:/cgns"
-	$cgns_bin = $cgns_prefix + "/bin"
-	cmake -DCGNS_ENABLE_64BIT="ON" `
-	      -DCGNS_ENABLE_HDF5="ON" `
-		  -DCGNS_BUILD_SHARED="ON" `
-		  -DCMAKE_INSTALL_PREFIX=$cgns_prefix ../
+	$metis_prefix = "C:/METIS/"
+	cmake ../
     cmake --build . --parallel 4 --config release
-	cmake --install .
-	AddMachinePath( $cgns_bin )
+	cmake --install . --prefix $metis_prefix
 	Write-Host "METIS-5.1.0 installation complete..."
 }
 
